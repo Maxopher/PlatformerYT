@@ -1,4 +1,5 @@
 import pygame
+from support import import_folder
 
 
 class Tile(pygame.sprite.Sprite):
@@ -23,4 +24,37 @@ class Crate(StaticTile):
         offset_y = y + size
         self.rect = self.image.get_rect(bottomleft=(x, offset_y))
 
+
+class AnimatedTile(Tile):
+    def __init__(self, size, x, y, path):
+        super().__init__(size, x, y)
+        self.frames = import_folder(path)
+        self.frames_index = 0
+        self.image = self.frames[self.frames_index]
+
+    def animate(self):
+        self.frames_index += 0.15
+        if self.frames_index >= len(self.frames):
+            self.frames_index = 0
+        self.image = self.frames[int(self.frames_index)]
+
+    def update(self, shift):
+        self.animate()
+        self.rect.x += shift
+
+
+class Coin(AnimatedTile):
+    def __init__(self, size, x, y, path):
+        super().__init__(size, x, y, path)
+        center_x = x + int(size / 2)
+        center_y = y + int(size / 2)
+        self.rect = self.image.get_rect(center=(center_x, center_y))
+
+
+class Palm(AnimatedTile):
+    def __init__(self, size, x, y, path):
+        super().__init__(size, x, y, path)
+        offset_y = y + size
+        offset_x = x + size/2
+        self.rect = self.image.get_rect(midbottom=(offset_x, offset_y))
 
