@@ -10,7 +10,7 @@ from settings import screen_width
 from game_data import levels
 
 class Level:
-    def __init__(self, current_level, surface, create_overworld):
+    def __init__(self, current_level, surface, create_overworld, change_coins):
         # general set up
         self.display_surface = surface
         self.world_shift = 0
@@ -27,6 +27,9 @@ class Level:
         self.player = pygame.sprite.GroupSingle()
         self.goal = pygame.sprite.GroupSingle()
         self.player_setup(player_layout)
+
+        # user interface
+        self.change_coins = change_coins
 
         # dust
         self.dust_sprite = pygame.sprite.GroupSingle()
@@ -94,9 +97,9 @@ class Level:
 
                     if type == 'coins':
                         if val == '0':
-                            sprite = Coin(tile_size, x, y, './graphics/coins/gold')
+                            sprite = Coin(tile_size, x, y, './graphics/coins/gold', 5)
                         if val == '1':
-                            sprite = Coin(tile_size, x, y, './graphics/coins/silver')
+                            sprite = Coin(tile_size, x, y, './graphics/coins/silver', 1)
 
                     if type == 'fg palms':
                         if val == '0':
@@ -223,6 +226,12 @@ class Level:
         if pygame.sprite.spritecollide(self.player.sprite, self.goal, False):
             self.create_overworld(self.current_level, self.new_max_level)
 
+    def check_coin_collisions(self):
+        collided_coins = pygame.sprite.spritecollide(self.player.sprite, self.coins_sprites, True)
+        if collided_coins:
+            for coin in collided_coins:
+                self.change_coins(coin.value)
+
     def run(self):
         # decoration
         self.sky.draw(self.display_surface)
@@ -277,6 +286,8 @@ class Level:
 
         self.check_win()
         self.check_death()
+
+        self.check_coin_collisions()
 
         # water
         self.water.draw(self.display_surface, self.world_shift)
